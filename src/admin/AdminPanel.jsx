@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
 import { TrendingUp, Users, Activity, Key, List, LogOut, RefreshCw, Ban, Trash2, CheckCircle } from "lucide-react";
 
 // URL do Cloudflare Worker — atualizar após deploy
-const WORKER_URL = "https://carteira-admin-api.kydhbhdt7z.workers.dev";
+const WORKER_URL = "https://carteira-admin-api.casstech.workers.dev";
 
 const SUPABASE_URL = "https://fvsojxozbvyznlzseboz.supabase.co";
 const SUPABASE_KEY = "sb_publishable_8g5sy2fm1lWJNn3_VuEjOg_blrmAkVJ";
