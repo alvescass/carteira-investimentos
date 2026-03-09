@@ -22,6 +22,37 @@ export function useCarteira(user) {
   const [saving,     setSaving]     = useState(false);
   const [error,      setError]      = useState(null);
 
+  // --- Consistência ---
+
+  /**
+   * Verifica e corrige proventos marcados como reaplicados que não estão
+   * vinculados a nenhuma aplicação ativa. Recebe os arrays diretamente
+   * para evitar dependência de estado assíncrono logo após o loadAll.
+   */
+  const checkConsistenciaProventos = useCallback(async (apls, provs) => {
+    const idsVinculados = new Set(
+      apls.flatMap((a) => a.origem_provento_ids ?? [])
+    );
+
+    const inconsistentes = provs.filter(
+      (p) => p.reaplicado === true && !idsVinculados.has(p.id)
+    );
+
+    if (inconsistentes.length === 0) return provs;
+
+    console.warn(`[useCarteira] Corrigindo ${inconsistentes.length} provento(s) inconsistente(s)...`);
+
+    await Promise.all(
+      inconsistentes.map((p) => dbPatch("proventos", p.id, { reaplicado: false }))
+    );
+
+    return provs.map((p) =>
+      inconsistentes.some((i) => i.id === p.id)
+        ? { ...p, reaplicado: false }
+        : p
+    );
+  }, []);
+
   // --- Carregamento inicial ---
 
   /**
@@ -40,12 +71,15 @@ export function useCarteira(user) {
         dbGet("configuracoes", `user_id=eq.${user.id}`),
       ]);
 
-      if (!Array.isArray(apls))   throw new Error("Erro ao carregar aplicações");
-      if (!Array.isArray(provs))  throw new Error("Erro ao carregar proventos");
+      if (!Array.isArray(apls))    throw new Error("Erro ao carregar aplicações");
+      if (!Array.isArray(provs))   throw new Error("Erro ao carregar proventos");
       if (!Array.isArray(configs)) throw new Error("Erro ao carregar configurações");
 
+      // Verifica e corrige inconsistências antes de setar o estado
+      const provsConsistentes = await checkConsistenciaProventos(apls, provs);
+
       setAplicacoes(apls);
-      setProventos(provs);
+      setProventos(provsConsistentes);
 
       // Restaura configurações salvas pelo usuário
       const cotConfig  = configs.find((c) => c.chave === "cotacaoUSD");
@@ -63,7 +97,7 @@ export function useCarteira(user) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, checkConsistenciaProventos]);
 
   // --- Aplicações ---
 
@@ -71,16 +105,16 @@ export function useCarteira(user) {
   const addAplicacao = useCallback(async (formData) => {
     setSaving(true);
     const body = {
-      nome:               formData.nome,
-      categoria:          formData.categoria,
-      moeda:              formData.moeda,
-      valor:              Number(formData.valor),
-      data:               formData.data,
-      rentabilidade:      formData.rentabilidade || null,
-      notas:              formData.notas || null,
-      corretora:          formData.corretora || null,
+      nome:                formData.nome,
+      categoria:           formData.categoria,
+      moeda:               formData.moeda,
+      valor:               Number(formData.valor),
+      data:                formData.data,
+      rentabilidade:       formData.rentabilidade || null,
+      notas:               formData.notas || null,
+      corretora:           formData.corretora || null,
       origem_provento_ids: formData.origemProventoIds,
-      user_id:            user.id,
+      user_id:             user.id,
     };
     const res = await dbPost("aplicacoes", body);
     if (res[0]) setAplicacoes((prev) => [res[0], ...prev]);
@@ -112,11 +146,28 @@ export function useCarteira(user) {
     setSaving(false);
   }, []);
 
-  /** Remove uma aplicação */
+  /** Remove uma aplicação e reverte reaplicado nos proventos vinculados */
   const deleteAplicacao = useCallback(async (id) => {
+    const aplicacao = aplicacoes.find((a) => a.id === id);
+
+    if (aplicacao?.origem_provento_ids?.length > 0) {
+      await Promise.all(
+        aplicacao.origem_provento_ids.map((proventoId) =>
+          dbPatch("proventos", proventoId, { reaplicado: false })
+        )
+      );
+      setProventos((prev) =>
+        prev.map((p) =>
+          aplicacao.origem_provento_ids.includes(p.id)
+            ? { ...p, reaplicado: false }
+            : p
+        )
+      );
+    }
+
     await dbDelete("aplicacoes", id);
     setAplicacoes((prev) => prev.filter((a) => a.id !== id));
-  }, []);
+  }, [aplicacoes]);
 
   // --- Proventos ---
 
@@ -124,14 +175,14 @@ export function useCarteira(user) {
   const addProvento = useCallback(async (formData) => {
     setSaving(true);
     const body = {
-      ativo:     formData.ativo,
-      tipo:      formData.tipo,
-      moeda:     formData.moeda,
-      valor:     Number(formData.valor),
-      data:      formData.data,
-      corretora: formData.corretora || null,
+      ativo:      formData.ativo,
+      tipo:       formData.tipo,
+      moeda:      formData.moeda,
+      valor:      Number(formData.valor),
+      data:       formData.data,
+      corretora:  formData.corretora || null,
       reaplicado: false,
-      user_id:   user.id,
+      user_id:    user.id,
     };
     const res = await dbPost("proventos", body);
     if (res[0]) setProventos((prev) => [res[0], ...prev]);
