@@ -27,7 +27,7 @@ const SummaryCard = ({ label, value, sub, color }) => (
 
 export default function Dashboard({ aplicacoes, proventos, cotacaoUSD }) {
   // Memoiza cálculos pesados para evitar recomputação desnecessária
-  const patrimonioBRL       = useMemo(() => calcPatrimonioBRL(aplicacoes, proventos, cotacaoUSD), [aplicacoes, proventos, cotacaoUSD]);
+  const patrimonioBRL       = useMemo(() => calcPatrimonioBRL(aplicacoes, cotacaoUSD), [aplicacoes, cotacaoUSD]);
   const totalProventosBRL   = useMemo(() => calcTotalProventosBRL(proventos, cotacaoUSD), [proventos, cotacaoUSD]);
   const proventosLivresBRL  = useMemo(() => calcProventosDisponiveisBRL(proventos, cotacaoUSD), [proventos, cotacaoUSD]);
   const byCategoria         = useMemo(() => calcByCategoria(aplicacoes, cotacaoUSD), [aplicacoes, cotacaoUSD]);

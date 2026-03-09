@@ -52,26 +52,13 @@ export const toBRL = (value, moeda, cotacaoUSD) => {
  * para evitar dupla contagem.
  *
  * @param {Array} aplicacoes - Lista de aplicações
- * @param {Array} proventos - Lista de proventos (para verificar origem)
  * @param {number} cotacaoUSD - Cotação do dólar
  * @returns {number} Total em BRL
  */
-export const calcPatrimonioBRL = (aplicacoes, proventos, cotacaoUSD) => {
-  const proventosReinvestidosIds = new Set(
-    proventos.filter((p) => p.reaplicado).map((p) => p.id)
+export const calcPatrimonioBRL = (aplicacoes, cotacaoUSD) => 
+  aplicacoes.reduce((total, a) => 
+    total + toBRL(Number(a.valor), a.moeda, cotacaoUSD), 0
   );
-
-  return aplicacoes.reduce((total, a) => {
-    // Se a aplicação veio 100% de proventos reaplicados, não conta no patrimônio
-    const origemIds = a.origem_provento_ids || [];
-    const todasOrigensReinvestidas =
-      origemIds.length > 0 &&
-      origemIds.every((id) => proventosReinvestidosIds.has(id));
-
-    if (todasOrigensReinvestidas) return total;
-    return total + toBRL(Number(a.valor), a.moeda, cotacaoUSD);
-  }, 0);
-};
 
 /**
  * Calcula o total de proventos recebidos em BRL.
