@@ -24,6 +24,14 @@ export const CATEGORIAS_ATIVO = [
   "Outros",
 ];
 
+export const CATEGORIAS_COM_QUANTIDADE = [
+  "Ações",
+  "FIIs",
+  "Criptomoedas",
+  "ETFs",
+  "Stocks",
+];
+
 export const CATEGORIAS_PROVENTO = [
   "Dividendos",
   "JCP",
@@ -67,6 +75,7 @@ export const DEFAULT_APLICACAO = {
   categoria: "Renda Fixa",
   moeda: "BRL",
   valor: "",
+  quantidade: "",
   data: today(),
   rentabilidade: "",
   notas: "",
