@@ -109,6 +109,7 @@ export function useCarteira(user) {
       categoria:           formData.categoria,
       moeda:               formData.moeda,
       valor:               Number(formData.valor),
+      quantidade:          formData.quantidade ? Number(formData.quantidade) : null,
       data:                formData.data,
       rentabilidade:       formData.rentabilidade || null,
       notas:               formData.notas || null,
@@ -139,7 +140,7 @@ export function useCarteira(user) {
   const updateAplicacao = useCallback(async (item) => {
     setSaving(true);
     const { id, created_at, ...rest } = item;
-    await dbPatch("aplicacoes", id, { ...rest, valor: Number(rest.valor) });
+    await dbPatch("aplicacoes", id, { ...rest, valor: Number(rest.valor), quantidade: rest.quantidade ? Number(rest.quantidade) : null });
     setAplicacoes((prev) =>
       prev.map((a) => (a.id === id ? { ...item, valor: Number(item.valor) } : a))
     );
