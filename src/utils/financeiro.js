@@ -125,3 +125,37 @@ export const calcProventosPorMes = (proventos, cotacaoUSD) => {
 
   return Object.values(grupos).sort((a, b) => a.ordem.localeCompare(b.ordem));
 };
+
+// --- Cálculos por ativo ---
+
+/**
+ * Calcula a quantidade total de cotas/ações de um ativo.
+ * Soma todas as aplicações do mesmo nome que possuem quantidade informada.
+ *
+ * @param {Array} aplicacoes - Lista de aplicações
+ * @param {string} nomeAtivo - Nome do ativo a filtrar
+ * @returns {number} Quantidade total
+ */
+export const calcQuantidadeTotal = (aplicacoes, nomeAtivo) =>
+  aplicacoes
+    .filter((a) => a.nome === nomeAtivo && a.quantidade != null)
+    .reduce((total, a) => total + Number(a.quantidade), 0);
+
+/**
+ * Calcula o preço médio ponderado de um ativo em sua moeda original.
+ * Considera apenas aplicações com quantidade informada.
+ *
+ * @param {Array} aplicacoes - Lista de aplicações
+ * @param {string} nomeAtivo - Nome do ativo a filtrar
+ * @returns {number} Preço médio por cota/ação, ou 0 se não houver quantidade
+ */
+export const calcPrecoMedio = (aplicacoes, nomeAtivo) => {
+  const compras = aplicacoes.filter(
+    (a) => a.nome === nomeAtivo && a.quantidade != null && Number(a.quantidade) > 0
+  );
+
+  const totalValor    = compras.reduce((s, a) => s + Number(a.valor), 0);
+  const totalQuantidade = compras.reduce((s, a) => s + Number(a.quantidade), 0);
+
+  return totalQuantidade > 0 ? totalValor / totalQuantidade : 0;
+};
