@@ -5,8 +5,8 @@
 // =============================================================================
 
 import { DollarSign, Trash2, ArrowRightCircle } from "lucide-react";
-import { CHART_COLORS, CATEGORIAS_ATIVO } from "../constants";
-import { fmt, fmtBRL, fmtDate, toBRL } from "../utils/financeiro";
+import { CHART_COLORS, CATEGORIAS_ATIVO, CATEGORIAS_COM_QUANTIDADE } from "../constants";
+import { fmt, fmtBRL, fmtDate, toBRL, calcPrecoMedio, calcQuantidadeTotal } from "../utils/financeiro";
 import { Badge } from "./UI";
 
 export default function AplicacoesList({ aplicacoes, proventos, cotacaoUSD, onEdit, onDelete }) {
@@ -28,6 +28,10 @@ export default function AplicacoesList({ aplicacoes, proventos, cotacaoUSD, onEd
         const origemTotal = proventos
           .filter((p) => a.origem_provento_ids?.includes(p.id))
           .reduce((s, p) => s + toBRL(Number(p.valor), p.moeda, cotacaoUSD), 0);
+
+          const temQuantidade = CATEGORIAS_COM_QUANTIDADE.includes(a.categoria) && a.quantidade;
+          const qtdTotal = temQuantidade ? calcQuantidadeTotal(aplicacoes, a.nome) : null;
+          const precoMedio = temQuantidade ? calcPrecoMedio(aplicacoes, a.nome) : null;
 
         return (
           <div key={a.id} style={{ background: "#141000", border: "1px solid #2A2000", borderRadius: 12, padding: "16px 18px" }}>
@@ -67,6 +71,18 @@ export default function AplicacoesList({ aplicacoes, proventos, cotacaoUSD, onEd
                 <div style={{ fontSize: 15, color: a.moeda === "USD" ? "#6AAFD4" : "#C9A84C", fontWeight: "bold" }}>{fmt(a.valor, a.moeda)}</div>
                 {a.moeda === "USD" && <div style={{ fontSize: 12, color: "#C9A84C" }}>{fmtBRL(valBRL)}</div>}
               </div>
+              {temQuantidade && (
+                <div>
+                  <div style={{ fontSize: 10, color: "#5A4A20", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Quantidade</div>
+                  <div style={{ fontSize: 13, color: "#7A6A40", }}>{Number(a.quantidade)}</div>
+                </div>
+              )}
+              {qtdTotal > 0 && precoMedio > 0  && (
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 10, color: "#5A4A20", textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>Preço Médio</div>
+                  <div style={{ fontSize: 13, color: "#A09060" }}>{fmt(precoMedio, a.moeda)}</div>
+                </div>
+              )}
 
               {/* Origem de proventos (se houver) */}
               {origemTotal > 0 && (
