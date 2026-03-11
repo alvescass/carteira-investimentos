@@ -5,7 +5,7 @@
 // ModalEdicao:    modal genérico de edição (reutiliza os formulários acima)
 // =============================================================================
 
-import { CATEGORIAS_ATIVO, CATEGORIAS_PROVENTO, MOEDAS } from "../constants";
+import { CATEGORIAS_ATIVO, CATEGORIAS_PROVENTO, MOEDAS, CATEGORIAS_COM_QUANTIDADE } from "../constants";
 import { fmtBRL, fmt, toBRL } from "../utils/financeiro";
 import { Modal, ButtonPrimary, CorretoraSelect, inputStyle, labelStyle } from "./UI";
 
@@ -22,6 +22,7 @@ const Field = ({ label, children }) => (
 // =============================================================================
 export function ModalAplicacao({ form, onChange, onSubmit, onClose, saving, proventos, corretoras, onAddCorretora, cotacaoUSD }) {
   const proventosDisponiveis = proventos.filter((p) => !p.reaplicado);
+  const temQuantidade = CATEGORIAS_COM_QUANTIDADE.includes(form.categoria);
 
   const toggleProvento = (id) => {
     const ids = form.origemProventoIds || [];
@@ -41,6 +42,14 @@ export function ModalAplicacao({ form, onChange, onSubmit, onClose, saving, prov
           <input type="number" value={form.valor} placeholder="0,00"
             onChange={(e) => onChange("valor", e.target.value)} style={inputStyle} />
         </Field>
+
+        {/* Quantidade — exibido apenas para categorias com cotas/ações */}
+        {temQuantidade && (
+          <Field label="Quantidade">
+            <input type="number" value={form.quantidade} placeholder="Ex: 10"
+              onChange={(e) => onChange("quantidade", e.target.value)} style={inputStyle} />
+          </Field>
+        )}
 
         <Field label="Data *">
           <input type="date" value={form.data}
@@ -175,6 +184,8 @@ export function ModalEdicao({ editItem, onChangeField, onSave, onClose, saving, 
   const onChange = (key, value) => onChangeField(key, value);
 
   if (tipo === "aplicacao") {
+    const temQuantidade = CATEGORIAS_COM_QUANTIDADE.includes(item.categoria);
+
     return (
       <Modal title="Editar Aplicação" onClose={onClose}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -190,6 +201,16 @@ export function ModalEdicao({ editItem, onChangeField, onSave, onClose, saving, 
               <input type={type} value={item[key] || ""} onChange={(e) => onChange(key, e.target.value)} style={inputStyle} />
             </div>
           ))}
+
+          {/* Quantidade — exibido apenas para categorias com cotas/ações */}
+          {temQuantidade && (
+            <div>
+              <label style={labelStyle}>Quantidade</label>
+              <input type="number" value={item.quantidade || ""} placeholder="Ex: 10"
+                onChange={(e) => onChange("quantidade", e.target.value)} style={inputStyle} />
+            </div>
+          )}
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
               <label style={labelStyle}>Categoria</label>
