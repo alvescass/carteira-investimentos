@@ -13,12 +13,9 @@
 
 import { useState, useEffect } from "react";
 import { TrendingUp, Users, Activity, Key, List, LogOut, RefreshCw, Ban, Trash2, CheckCircle } from "lucide-react";
+import { SUPABASE_URL, SUPABASE_KEY, WORKER_URL } from "../constants";
 
-// URL do Cloudflare Worker — atualizar após deploy
-const WORKER_URL = "https://carteira-admin-api.casstech.workers.dev";
-
-const SUPABASE_URL = "https://fvsojxozbvyznlzseboz.supabase.co";
-const SUPABASE_KEY = "sb_publishable_8g5sy2fm1lWJNn3_VuEjOg_blrmAkVJ";
+// ID do usuário administrador — usado para restringir acesso e proteger o admin de ações destrutivas
 const ADMIN_USER_ID = "d459204d-350d-4c95-a896-07ad4cc02402";
 
 // --- Helpers ---

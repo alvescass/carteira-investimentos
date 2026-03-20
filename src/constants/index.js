@@ -8,6 +8,10 @@
 export const SUPABASE_URL = "https://fvsojxozbvyznlzseboz.supabase.co";
 export const SUPABASE_KEY = "sb_publishable_8g5sy2fm1lWJNn3_VuEjOg_blrmAkVJ";
 
+// --- Admin ---
+// URL do Cloudflare Worker. Em desenvolvimento, defina VITE_WORKER_URL no .env.local
+export const WORKER_URL = import.meta.env.VITE_WORKER_URL || "http://carteira-admin-api.casstech.workers.dev";
+
 // --- Sessão ---
 // Tempo de inatividade em ms antes de deslogar automaticamente (30 minutos)
 export const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
