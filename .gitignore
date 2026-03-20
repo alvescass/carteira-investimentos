@@ -1,0 +1,15 @@
+# Dependências
+node_modules/
+
+# Build
+dist/
+
+# Variáveis de ambiente locais
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+
+# Editor
+.DS_Store
